@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit de Bienestar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg: #FBF6EC;
+    --bg-panel: #FFFFFF;
+    --bg-soft: #F3ECDC;
+    --line: #EAE0CB;
+    --text: #3A342A;
+    --text-muted: #8C8271;
+    --ink-soft: #6B6255;
+    --radius: 18px;
+    --shadow: 0 6px 20px rgba(90, 70, 40, 0.07);
+    --shadow-hover: 0 10px 26px rgba(90, 70, 40, 0.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap{
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 34px 20px 90px;
+    position: relative;
+  }
+  .blob{
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(50px);
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .blob1{ width:240px; height:240px; top:-50px; left:-100px; background:#BFE2EA; }
+  .blob2{ width:200px; height:200px; top:80px; right:-90px; background:#F6D9C6; }
+
+  header{
+    text-align:center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #B5794A;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(26px, 5.6vw, 38px);
+    margin: 0 0 10px;
+    line-height: 1.14;
+    color: #34302A;
+  }
+  h1 em{
+    font-style: italic;
+    background: linear-gradient(90deg, #C9793F, #B5698F);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede{
+    color: var(--ink-soft);
+    max-width: 520px;
+    margin: 0 auto;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* Persistent breathing guide */
+  .breathe-wrap{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 22px 0 6px;
+    position: relative;
+    z-index: 1;
+  }
+  .breathe-circle{
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 180deg, #A9D6DD, #E8C79A, #D8AEDD, #A9D6DD);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 6px 18px rgba(150, 120, 90, 0.18);
+    animation: breathe 12s ease-in-out infinite;
+  }
+  .breathe-circle::before{
+    content:"";
+    width: 78%;
+    height: 78%;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+  @keyframes breathe{
+    0%   { transform: scale(0.72); }
+    33%  { transform: scale(1);    }
+    66%  { transform: scale(1);    }
+    100% { transform: scale(0.72); }
+  }
+  .breathe-text{ text-align: left; }
+  .breathe-label{
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .breathe-hint{
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .breathe-circle{ animation: none; }
+  }
+
+  /* Fullness bar */
+  .ground{
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .ground-label{
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .ground-label b{ color: #B5698F; font-weight: 800; }
+  .roots{
+    height: 8px;
+    border-radius: 6px;
+    background: var(--bg-soft);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .roots-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7FB6C4, #E3B36E, #C98BAE, #8E9FD0);
+    transition: width 0.6s ease;
+    border-radius: 6px;
+  }
+
+  /* Step dots */
+  .stepper{
+    display:flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 22px 0 4px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .dot{
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 15px;
+    background: var(--bg-soft);
+    border: 2px solid transparent;
+    color: var(--text-muted);
+    cursor: default;
+    opacity: 0.45;
+    transition: all 0.25s ease;
+  }
+  .dot.visited{
+    opacity: 1;
+    cursor: pointer;
+    background: var(--dot-bg, var(--bg-soft));
+  }
+  .dot.current{
+    border-color: var(--dot-accent, #C9793F);
+    transform: scale(1.12);
+    opacity: 1;
+  }
+
+  /* Stage */
+  .stage-outer{
+    min-height: 420px;
+    position: relative;
+    z-index: 1;
+  }
+  .stage{
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    margin-top: 28px;
+  }
+  .stage.visible{
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .category-head{
+    display:flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--cat-bg, var(--bg-soft));
+  }
+  .category-head .icon{
+    font-size: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--bg-panel);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+  }
+  .category-head h2{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0;
+    color: var(--cat-ink, #3A342A);
+  }
+  .category-head .sub{
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    margin-left: auto;
+    text-align: right;
+    display: none;
+  }
+  @media (min-width: 560px){ .category-head .sub{ display: block; } }
+
+  .cards{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--cat-accent, #C9793F);
+    border-radius: var(--radius);
+    padding: 18px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .card h3{ font-size: 16px; margin: 0; font-weight: 800; color: #34302A; }
+  .card p{ font-size: 14px; line-height: 1.55; color: var(--ink-soft); margin: 0; flex-grow: 1; }
+  .card button{
+    align-self: flex-start;
+    background: transparent;
+    border: 1.5px solid var(--cat-accent, #C9793F);
+    color: var(--cat-accent, #C9793F);
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .card button:hover{ background: var(--cat-accent, #C9793F); color: #fff; }
+  .card.added{ background: var(--cat-bg, var(--bg-soft)); }
+  .card.added button{ background: var(--cat-accent, #C9793F); border-color: var(--cat-accent, #C9793F); color: #fff; }
+
+  /* Nav buttons */
+  .stage-nav{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 26px;
+  }
+  .nav-btn{
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 800;
+    font-size: 14.5px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    border: none;
+  }
+  .nav-prev{
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    visibility: hidden;
+  }
+  .nav-prev.show{ visibility: visible; }
+  .nav-next{
+    background: linear-gradient(90deg, #D98B4E, #C9698F);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(201, 121, 63, 0.3);
+    margin-left: auto;
+  }
+
+  /* Kit review stage */
+  .kit-title{
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .kit-title span{
+    background: linear-gradient(90deg, #C9793F, #B5698F);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .kit-sub{ color: var(--text-muted); font-size: 14px; margin: 0 0 18px; }
+  #kit-empty{ color: var(--text-muted); font-size: 14px; font-style: italic; padding: 18px 0; }
+  #kit-list{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .kit-item{
+    background: var(--bg-soft);
+    border-left: 3px solid var(--kit-accent, #C9793F);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  .kit-item b{ display:block; font-size: 15px; margin-bottom: 2px; color: #34302A; }
+  .kit-item .kit-cat{ color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+  .kit-item p{ margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+  .actions{ display:flex; align-items:center; gap: 14px; flex-wrap: wrap; margin-top: 22px; }
+  #download-btn{
+    background: linear-gradient(90deg, #D98B4E, #C9698F);
+    color: #fff;
+    border: none;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 13px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(201, 121, 63, 0.3);
+  }
+  #download-btn:disabled{ background: var(--bg-soft); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+  .howto{ font-size: 13px; color: var(--text-muted); }
+
+  footer{
+    text-align:center;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    margin-top: 40px;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <header>
+    <div class="eyebrow">Kit de Bienestar</div>
+    <h1>Estrategias para regular <em>el miedo</em> ante lo vivido</h1>
+    <p class="lede">Vamos a recorrerlas juntos, una a la vez. Elige las que más te ayuden — al final tendrás tu propio kit para llevarte.</p>
+  </header>
+
+  <div class="breathe-wrap">
+    <div class="breathe-circle"></div>
+    <div class="breathe-text">
+      <div class="breathe-label" id="breathe-label">Inhala…</div>
+      <div class="breathe-hint">Sigue el círculo si necesitas calmarte ahora</div>
+    </div>
+  </div>
+
+  <div class="ground">
+    <div class="ground-label"><span>Tu kit va creciendo</span><b id="count-label">0 herramientas</b></div>
+    <div class="roots"><div class="roots-fill" id="roots-fill"></div></div>
+  </div>
+
+  <div class="stepper" id="stepper"></div>
+
+  <div class="stage-outer">
+    <div class="stage" id="stage"></div>
+  </div>
+
+  <footer>
+    Puedes volver a esta página cuando lo necesites. Guardarla en tu pantalla de inicio la deja a un toque de distancia.<br>
+    Si el miedo persiste con fuerza o te cuesta funcionar en tu día a día, buscar apoyo profesional también es parte del cuidado.
+  </footer>
+</div>
+
+<script>
+const DATA = [
+  {
+    cat: "Respirar y anclar", icon: "〰️",
+    sub: "para calmarte en el momento",
+    bg: "#E3F2F6", accent: "#4E93A8", ink: "#2E5A66",
+    items: [
+      {t:"Respiración 4-4-8", d:"Inhala en 4 tiempos, sostén 4, exhala en 8. Repite 4 veces. Se alarga la exhalación para ayudar a calmar al sistema nervioso."},
+      {t:"Respiración de caja", d:"Inhala 4, sostén 4, exhala 4, sostén 4. Imagina que dibujas los lados de un cuadrado con la respiración."},
+      {t:"Técnica 5-4-3-2-1", d:"Nombra 5 cosas que ves, 4 que tocas, 3 que oyes, 2 que hueles, 1 que saboreas. Esta técnica trae la atención al aquí y ahora."},
+      {t:"Ancla al presente", d:"Mantén un objeto pequeño en tu bolsillo (como una piedra suave o una llave). Al sentir miedo o ansiedad, tócalo para conectar con su textura y temperatura; esto le recuerda a tu mente regresar al momento presente."},
+      {t:"Pies en el suelo", d:"Presiona firmemente las plantas de los pies contra el piso y presta atención al soporte que te sostiene. Mientras lo haces, repite mentalmente: “Estoy aquí, estoy a salvo ahora”."}
+    ]
+  },
+  {
+    cat: "Mover el cuerpo", icon: "🤲",
+    sub: "para soltar tensión",
+    bg: "#FBEADB", accent: "#D9853F", ink: "#8A5324",
+    items: [
+      {t:"Tensa y suelta", d:"Lleva los hombros hacia arriba, apretándolos fuerte hacia las orejas durante 5 segundos, y déjalos caer de golpe. Repite el movimiento 3 veces. Nota la diferencia entre la rigidez acumulada y la sensación de descanso al soltar."},
+      {t:"Caminata breve", d:"Camina 5 minutos prestando atención a cada paso. El movimiento rítmico ayuda a descargar la activación del cuerpo."},
+      {t:"Auto-abrazo", d:"Cruza los brazos, abraza tus hombros y da palmaditas rítmicas alternando mano izquierda y derecha. Un gesto simple de autocuidado que calma la mente y te devuelve la sensación de seguridad."}
+    ]
+  },
+  {
+    cat: "Pensar y nombrar", icon: "💭",
+    sub: "para ordenar la mente y lo que sientes",
+    bg: "#ECE4F7", accent: "#8567B0", ink: "#4F3B72",
+    items: [
+      {t:"Validar sin juzgar", d:"Recuerda que sentir miedo, alerta o tristeza tras un evento inesperado es una respuesta esperable y adaptativa del cuerpo, no una señal de debilidad. Darle espacio a tu emoción sin criticarte es el primer paso para procesarla."},
+      {t:"Ponle nombre a la emoción", d:"Di en voz alta o escribe qué sientes: 'siento miedo', 'siento tristeza'. Nombrar la emoción ayuda a reducir su intensidad."},
+      {t:"Ancla de realidad", d:"¿Qué ocurre realmente ahora? vs. ¿Qué estoy temiendo del futuro? Separar lo que pasa de lo que anticipas le quita fuerza a la incertidumbre."},
+      {t:"Mantra de seguridad", d:"Elige una frase corta que te transmita serenidad ('Esto también pasará' o 'Mi cuerpo sabe recuperar el equilibrio') y repítela internamente cuando notes que la angustia aumenta o cuando el miedo intente tomar el control. Un mensaje simple de seguridad ayuda a mantener el eje durante la crisis."},
+      {t:"Diario breve", d:"Escribe 3 líneas al final del día sobre cómo te sentiste. No busques resolverlo, solo regístralo."}
+    ]
+  },
+  {
+    cat: "Activación y crisis de ansiedad", icon: "⚡",
+    sub: "de los sobresaltos cotidianos a las crisis intensas",
+    bg: "#FCEFCB", accent: "#C9932E", ink: "#7A5A16",
+    items: [
+      {t:"Entiende qué es esto", d:"Si un portazo, un ruido fuerte o hasta una silla que se mueve te hacen saltar o se te acelera el corazón, es tu sistema de alarma sobreactivado tras el sismo. No es exagerar: es un cuerpo que sigue en modo de detectar peligro."},
+      {t:"Aceptar el ritmo del proceso", d:"Este tipo de reacciones suele bajar con los días y semanas, no de un momento a otro. Que todavía te sobresaltes no significa que no estés sanando."},
+      {t:"Orienta el espacio", d:"Cuando te sobresaltes, mira despacio a tu alrededor y nombra 2 o 3 cosas que confirman que estás a salvo ahora: 'el techo está firme', 'estoy sentado', 'no hay nada cayendo'."},
+      {t:"Describe un objeto en detalle", d:"En plena crisis, describe mentalmente algo cercano con el mayor detalle posible: color, textura, forma. Ocupa la mente en algo muy concreto mientras el cuerpo se regula."},
+      {t:"Si escala a crisis: exhala largo", d:"Ante la falta de aire o la sensación de perder el control, no fuerces una inhalación profunda. Concéntrate únicamente en exhalar más despacio de lo que inhalas, como si soplaras suavemente una vela lejana, hasta que la intensidad empiece a ceder."},
+      {t:"¿Cuándo buscar ayuda inmediata?", d:"Si las crisis son muy frecuentes, extremadamente intensas o sientes que la capacidad para recuperarte por ti mismo/a se agota, compártelo con tus personas de confianza y acude a las líneas o servicios de atención profesional."}
+    ]
+  },
+  {
+    cat: "Duelo", icon: "🕊️",
+    sub: "para las pérdidas de casa, rutina o personas cercanas",
+    bg: "#E6ECEA", accent: "#5E7D78", ink: "#354E49",
+    items: [
+      {t:"No hay un tiempo correcto", d:"No existen plazos ni fórmulas fijas para procesar lo que sientes. Permítete vivir esta experiencia a tu propio ritmo, libre de expectativas sobre cómo 'deberías' estar. No hay una forma 'adecuada' ni un plazo para sentirlo."},
+      {t:"Permítete no estar bien", d:"Exigirte un rendimiento normal tras un evento estresante solo intensifica el agotamiento. Reducir la marcha, cancelar compromisos y pedir espacio no es rendirse; es una forma legítima de autocuidado. Al soltar las expectativas externas y reconocer tus límites, le das a tu cuerpo y a tu mente el alivio necesario para sanar sin la presión de parecer 'fuerte'."},
+      {t:"Cuida lo básico primero", d:"En medio del duelo, sostener comer, dormir e hidratarte, aunque sea mínimamente, es una forma de cuidado que sostiene todo lo demás."},
+      {t:"Un pequeño ritual de despedida", d:"Escribe una carta, guarda una foto o comparte un recuerdo en voz alta sobre lo que perdiste. Los rituales, aunque pequeños, ayudan a procesar la pérdida."}
+    ]
+  },
+  {
+    cat: "Conectar", icon: "🤝",
+    sub: "para no atravesarlo solo",
+    bg: "#FBE4EA", accent: "#C4658A", ink: "#823A57",
+    items: [
+      {t:"Conecta con alguien seguro", d:"Identifica a una persona de tu confianza y escríbele o llámala cuando notes que la emoción aumenta, aunque sea solo para estar en silencio o escuchar su voz. No tienes que atravesar esto en soledad; acompañarte también es cuidarte."},
+      {t:"Pedir ayuda sin culpa", d:"Pedir apoyo no es una señal de debilidad ni de incapacidad. Recurrir al apoyo de un profesional o a los servicios de Bienestar Institucional es un recurso legítimo para proteger tu equilibrio y sumar herramientas a tu kit de cuidado personal."},
+      {t:"Espacios de escucha entre pares", d:"Habla de lo ocurrido con tus compañeros o personas cercanas. Escuchar que otros experimentan sensaciones, temores o pensamientos similares a los tuyos ayuda a descentrar la vivencia, reduce la sensación de aislamiento y valida tu propio proceso."}
+    ]
+  }
+];
+
+const KIT_STEP = DATA.length; // final review step index
+const kit = [];
+let totalItems = 0;
+DATA.forEach(c => totalItems += c.items.length);
+
+let currentStep = 0;
+let maxStep = 0;
+
+const stepperEl = document.getElementById('stepper');
+const stageEl = document.getElementById('stage');
+const countLabel = document.getElementById('count-label');
+const rootsFill = document.getElementById('roots-fill');
+const breatheLabel = document.getElementById('breathe-label');
+
+function renderStepper(){
+  const dots = DATA.map((c, i) => {
+    const visited = i <= maxStep;
+    const current = i === currentStep;
+    return `<div class="dot ${visited?'visited':''} ${current?'current':''}"
+      style="--dot-bg:${c.bg}; --dot-accent:${c.accent};"
+      data-step="${i}" title="${c.cat}">${c.icon}</div>`;
+  }).join('');
+  const kitVisited = KIT_STEP <= maxStep;
+  const kitCurrent = currentStep === KIT_STEP;
+  const kitDot = `<div class="dot ${kitVisited?'visited':''} ${kitCurrent?'current':''}"
+      style="--dot-bg:#FBE4EA; --dot-accent:#C9698F;"
+      data-step="${KIT_STEP}" title="Mi Kit">🎒</div>`;
+  stepperEl.innerHTML = dots + kitDot;
+}
+
+function goToStep(idx){
+  if(idx > maxStep + 1) return;
+  currentStep = idx;
+  maxStep = Math.max(maxStep, idx);
+  renderStage();
+  renderStepper();
+  window.scrollTo({top: stepperEl.offsetTop - 20, behavior:'smooth'});
+}
+
+stepperEl.addEventListener('click', (e) => {
+  const dot = e.target.closest('.dot');
+  if(!dot || !dot.classList.contains('visited')) return;
+  goToStep(parseInt(dot.dataset.step, 10));
+});
+
+function buildCategoryStageHTML(ci){
+  const cat = DATA[ci];
+  const cardsHTML = cat.items.map((item, ii) => {
+    const id = `${ci}-${ii}`;
+    const already = kit.find(k => k.id === id);
+    return `
+      <div class="card ${already?'added':''}" id="card-${id}">
+        <h3>${item.t}</h3>
+        <p>${item.d}</p>
+        <button data-id="${id}" data-cat="${cat.cat}" data-t="${item.t}" data-accent="${cat.accent}">
+          ${already ? '✓ En mi kit' : '+ Agregar a mi kit'}
+        </button>
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="--cat-bg:${cat.bg}; --cat-accent:${cat.accent}; --cat-ink:${cat.ink};">
+      <div class="category-head">
+        <span class="icon">${cat.icon}</span>
+        <h2>${cat.cat}</h2>
+        <span class="sub">${cat.sub}</span>
+      </div>
+      <div class="cards">${cardsHTML}</div>
+      <div class="stage-nav">
+        <button class="nav-btn nav-prev ${ci>0?'show':''}" id="prev-btn">← Anterior</button>
+        <button class="nav-btn nav-next" id="next-btn">
+          ${ci === DATA.length-1 ? 'Ver mi kit final →' : 'Siguiente →'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function buildKitStageHTML(){
+  const emptyHTML = `<div id="kit-empty">Aún no elegiste herramientas — vuelve atrás y elige las que más te ayuden.</div>`;
+  const listHTML = kit.length ? `<div id="kit-list">${kit.map(k => `
+      <div class="kit-item" style="--kit-accent:${k.accent}"><b>${k.t}</b><span class="kit-cat">${k.cat}</span><p>${k.d}</p></div>
+    `).join('')}</div>` : '';
+
+  return `
+    <div id="kit-capture">
+      <p class="kit-title">Mi <span>Kit de Bienestar</span></p>
+      <p class="kit-sub">${kit.length ? `${kit.length} herramienta${kit.length===1?'':'s'} elegida${kit.length===1?'':'s'} — llévalas contigo.` : 'Aún no has agregado herramientas.'}</p>
+      ${kit.length ? '' : emptyHTML}
+      ${listHTML}
+    </div>
+    <div class="actions">
+      <button id="download-btn" ${kit.length===0?'disabled':''}>Guardar mi kit en el celular</button>
+      <span class="howto">Se descarga como imagen — queda lista en tu galería.</span>
+    </div>
+    <div class="stage-nav">
+      <button class="nav-btn nav-prev show" id="prev-btn">← Anterior</button>
+    </div>`;
+}
+
+function renderStage(){
+  stageEl.classList.remove('visible');
+  setTimeout(() => {
+    stageEl.innerHTML = currentStep === KIT_STEP ? buildKitStageHTML() : buildCategoryStageHTML(currentStep);
+    attachStageEvents();
+    stageEl.classList.add('visible');
+  }, 220);
+}
+
+function attachStageEvents(){
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  if(prevBtn) prevBtn.addEventListener('click', () => goToStep(Math.max(0, currentStep - 1)));
+  if(nextBtn) nextBtn.addEventListener('click', () => goToStep(currentStep + 1));
+
+  const cardsEl = stageEl.querySelector('.cards');
+  if(cardsEl){
+    cardsEl.addEventListener('click', (e) => {
+      if(e.target.tagName !== 'BUTTON') return;
+      const btn = e.target;
+      const id = btn.dataset.id;
+      const card = document.getElementById(`card-${id}`);
+      const already = kit.find(k => k.id === id);
+      if(already){
+        kit.splice(kit.indexOf(already), 1);
+        card.classList.remove('added');
+        btn.textContent = '+ Agregar a mi kit';
+      } else {
+        const [ci, ii] = id.split('-').map(Number);
+        const item = DATA[ci].items[ii];
+        kit.push({id, cat: btn.dataset.cat, t: btn.dataset.t, d: item.d, accent: btn.dataset.accent});
+        card.classList.add('added');
+        btn.textContent = '✓ En mi kit';
+      }
+      updateGround();
+    });
+  }
+
+  const downloadBtn = document.getElementById('download-btn');
+  if(downloadBtn){
+    downloadBtn.addEventListener('click', () => {
+      const el = document.getElementById('kit-capture');
+      downloadBtn.textContent = 'Generando imagen...';
+      html2canvas(el, {backgroundColor: '#FFFFFF', scale: 2}).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'mi-kit-de-bienestar.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        downloadBtn.textContent = 'Guardar mi kit en el celular';
+      });
+    });
+  }
+}
+
+function updateGround(){
+  countLabel.textContent = `${kit.length} herramienta${kit.length===1?'':'s'}`;
+  rootsFill.style.width = Math.min(100, (kit.length/totalItems)*100) + '%';
+}
+
+// init
+renderStepper();
+renderStage();
+stageEl.classList.add('visible');
+
+// Breathing guide label sync
+const phases = ["Inhala…", "Sostén…", "Exhala…"];
+let phaseIdx = 0;
+setInterval(() => {
+  phaseIdx = (phaseIdx + 1) % phases.length;
+  breatheLabel.textContent = phases[phaseIdx];
+}, 4000);
+</script>
+</body>
+</html>
