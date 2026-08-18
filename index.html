@@ -355,10 +355,24 @@
     color: #C9793F;
   }
   #kit-empty{ color: var(--text-muted); font-size: 14px; font-style: italic; padding: 18px 0; }
-  #kit-list{
+  #kit-list, .kit-list{
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+
+  /* Lienzo de exportación: ancho fijo, fuera de pantalla. Así la imagen no
+     depende del ancho del teléfono y WhatsApp no la reescala. */
+  .export-root{
+    position: absolute;
+    left: -10000px;
+    top: 0;
+    width: 540px;
+    pointer-events: none;
+  }
+  .export-page{
+    width: 540px;
+    background: #FFFFFF;
   }
   .kit-item{
     background: var(--bg-soft);
@@ -417,6 +431,7 @@
     border-radius: 10px;
     border: 1px solid var(--line);
   }
+  .save-fallback img + img{ margin-top: 12px; }
 
   .wa-btn{
     display: inline-flex;
@@ -857,30 +872,99 @@ function canvasToBlob(canvas){
   });
 }
 
+/* WhatsApp reescala la foto para que el lado más largo no pase de ~1600px.
+   Una imagen muy alta pierde ancho y el texto queda ilegible, así que
+   exportamos páginas de 540x675 css (1080x1350 a escala 2). */
+const EXPORT = {
+  cssWidth: 540,
+  maxCssHeight: 795, // 795x2 = 1590px: justo por debajo del tope de WhatsApp
+  scale: 2,
+  gap: 10 // debe coincidir con el gap de .kit-list
+};
+
+function pageFileName(i, total){
+  return total === 1 ? FILE_NAME : `mi-kit-de-bienestar-${i + 1}.png`;
+}
+
+function buildExportPage(items, index, total){
+  const page = document.createElement('div');
+  page.className = 'export-page capturing';
+  const sub = total > 1
+    ? `Parte ${index + 1} de ${total} — ${kit.length} herramientas elegidas.`
+    : `${kit.length} herramienta${kit.length === 1 ? '' : 's'} elegida${kit.length === 1 ? '' : 's'} — llévalas contigo.`;
+  page.innerHTML = `
+    <p class="kit-title">Mi <span>Kit de Bienestar</span></p>
+    <p class="kit-sub">${esc(sub)}</p>
+    <div class="kit-list">${items.map(k => `
+      <div class="kit-item" style="--kit-accent:${esc(k.accent)}"><b>${esc(k.t)}</b><span class="kit-cat">${esc(k.cat)}</span><p>${esc(k.d)}</p></div>`).join('')}</div>`;
+  return page;
+}
+
+// Reparte las herramientas en páginas que quepan en maxCssHeight.
+function paginateKit(root){
+  const probe = buildExportPage(kit, 0, 1);
+  root.appendChild(probe);
+  const listTop = probe.querySelector('.kit-list').offsetTop;
+  const padBottom = parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+  const heights = [...probe.querySelectorAll('.kit-item')].map(el => el.offsetHeight);
+  root.removeChild(probe);
+
+  const avail = EXPORT.maxCssHeight - listTop - padBottom;
+  const pages = [];
+  let current = [], currentH = 0;
+  kit.forEach((k, i) => {
+    const add = heights[i] + (current.length ? EXPORT.gap : 0);
+    if(current.length && currentH + add > avail){
+      pages.push(current);
+      current = []; currentH = 0;
+    }
+    currentH += current.length ? heights[i] + EXPORT.gap : heights[i];
+    current.push(k);
+  });
+  if(current.length) pages.push(current);
+  return pages;
+}
+
+async function renderKitImages(){
+  const root = document.createElement('div');
+  root.className = 'export-root';
+  document.body.appendChild(root);
+  try{
+    const pages = paginateKit(root);
+    const blobs = [];
+    for(let i = 0; i < pages.length; i++){
+      const pageEl = buildExportPage(pages[i], i, pages.length);
+      root.appendChild(pageEl);
+      const canvas = await html2canvas(pageEl, {
+        backgroundColor: '#FFFFFF',
+        scale: Math.min(EXPORT.scale, safeScale(pageEl)),
+        useCORS: true
+      });
+      root.removeChild(pageEl);
+      blobs.push(await canvasToBlob(canvas));
+    }
+    return blobs;
+  }finally{
+    root.remove();
+  }
+}
+
 async function saveKitImage(btn){
-  const el = document.getElementById('kit-capture');
   clearSaveNotice();
   btn.disabled = true;
   btn.textContent = 'Generando imagen...';
   try{
-    const canvas = await html2canvas(el, {
-      backgroundColor: '#FFFFFF',
-      scale: safeScale(el),
-      useCORS: true,
-      onclone: (doc) => {
-        const clone = doc.getElementById('kit-capture');
-        if(clone) clone.classList.add('capturing');
-      }
+    const blobs = await renderKitImages();
+    const files = [];
+    blobs.forEach((b, i) => {
+      try{ files.push(new File([b], pageFileName(i, blobs.length), {type:'image/png'})); }
+      catch(e){ /* sin constructor File */ }
     });
-    const blob = await canvasToBlob(canvas);
-
-    let file = null;
-    try{ file = new File([blob], FILE_NAME, {type:'image/png'}); }catch(e){ /* sin constructor File */ }
 
     // 1. Hoja de compartir: la única vía que llega a Fotos en iOS.
-    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+    if(files.length === blobs.length && navigator.canShare && navigator.canShare({files})){
       try{
-        await navigator.share({files:[file], title:'Mi Kit de Bienestar'});
+        await navigator.share({files, title:'Mi Kit de Bienestar'});
         return;
       }catch(err){
         if(err && err.name === 'AbortError') return; // el usuario cerró la hoja
@@ -888,19 +972,28 @@ async function saveKitImage(btn){
       }
     }
 
-    // 2. Descarga real: escritorio y Android.
+    // 2. Descarga real: escritorio y Android. Espaciadas para que el
+    //    navegador no bloquee las descargas múltiples.
     if(!isIOS){
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = FILE_NAME;
-      link.href = url;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      blobs.forEach((b, i) => {
+        setTimeout(() => {
+          const url = URL.createObjectURL(b);
+          const link = document.createElement('a');
+          link.download = pageFileName(i, blobs.length);
+          link.href = url;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }, i * 400);
+      });
       return;
     }
 
-    // 3. iOS sin compartir: mantener presionada la imagen para guardarla.
-    showSaveNotice('Mantén presionada la imagen y elige <b>“Guardar en Fotos”</b>.', URL.createObjectURL(blob));
+    // 3. iOS sin compartir: mantener presionada cada imagen para guardarla.
+    const many = blobs.length > 1;
+    showSaveNotice(
+      `Mantén presionada ${many ? 'cada imagen' : 'la imagen'} y elige <b>“Guardar en Fotos”</b>.`,
+      blobs.map(b => URL.createObjectURL(b))
+    );
   }catch(err){
     console.error(err);
     showSaveNotice('No se pudo generar la imagen. Puedes tomar una captura de pantalla de tu kit — funciona igual de bien.');
@@ -913,13 +1006,12 @@ async function saveKitImage(btn){
 function clearSaveNotice(){
   const old = stageEl.querySelector('.save-fallback');
   if(old){
-    const img = old.querySelector('img');
-    if(img) URL.revokeObjectURL(img.src);
+    old.querySelectorAll('img').forEach(img => URL.revokeObjectURL(img.src));
     old.remove();
   }
 }
 
-function showSaveNotice(message, imgUrl){
+function showSaveNotice(message, imgUrls){
   const actions = stageEl.querySelector('.actions');
   if(!actions) return;
   const box = document.createElement('div');
@@ -927,12 +1019,12 @@ function showSaveNotice(message, imgUrl){
   const p = document.createElement('p');
   p.innerHTML = message;
   box.appendChild(p);
-  if(imgUrl){
+  (imgUrls || []).forEach((url, i) => {
     const img = document.createElement('img');
-    img.alt = 'Mi Kit de Bienestar';
-    img.src = imgUrl;
+    img.alt = `Mi Kit de Bienestar${(imgUrls.length > 1) ? ` — parte ${i + 1}` : ''}`;
+    img.src = url;
     box.appendChild(img);
-  }
+  });
   actions.after(box);
 }
 
