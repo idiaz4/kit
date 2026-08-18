@@ -33,6 +33,9 @@
     margin: 0 auto;
     padding: 34px 20px 90px;
     position: relative;
+    /* Las manchas decorativas se salen a propósito; sin esto hay scroll lateral.
+       clip recorta solo en horizontal y no crea contenedor de scroll. */
+    overflow-x: clip;
   }
   .blob{
     position: absolute;
@@ -44,6 +47,15 @@
   }
   .blob1{ width:240px; height:240px; top:-50px; left:-100px; background:#BFE2EA; }
   .blob2{ width:200px; height:200px; top:80px; right:-90px; background:#F6D9C6; }
+
+  .site-logo{
+    display: block;
+    width: clamp(120px, 35.2vw, 176px);
+    height: auto;
+    margin: 0 auto 22px;
+    position: relative;
+    z-index: 1; /* por encima de las manchas difuminadas */
+  }
 
   header{
     text-align:center;
@@ -333,6 +345,15 @@
     color: transparent;
   }
   .kit-sub{ color: var(--text-muted); font-size: 14px; margin: 0 0 18px; }
+  /* Estilos que solo aplican al clon que captura html2canvas. */
+  .capturing{ padding: 26px 24px; }
+  /* html2canvas no soporta background-clip:text — al capturar usamos color sólido. */
+  .capturing .kit-title span{
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: #C9793F;
+  }
   #kit-empty{ color: var(--text-muted); font-size: 14px; font-style: italic; padding: 18px 0; }
   #kit-list{
     display: flex;
@@ -364,6 +385,59 @@
   }
   #download-btn:disabled{ background: var(--bg-soft); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
   .howto{ font-size: 13px; color: var(--text-muted); }
+  .kit-saved{ font-size: 12.5px; color: var(--ink-soft); margin: 14px 0 0; }
+  .linklike{
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: #B5698F;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .save-fallback{
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-panel);
+    box-shadow: var(--shadow);
+  }
+  .save-fallback p{
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .save-fallback img{
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+
+  .wa-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 20px;
+    padding: 11px 20px;
+    border-radius: 999px;
+    /* Verde oscuro de WhatsApp: el verde claro no llega al contraste AA
+       con texto blanco y además choca con la paleta cálida. */
+    background: #075E54;
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 14.5px;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(7, 94, 84, 0.25);
+    transition: background 0.15s ease;
+  }
+  .wa-btn:hover{ background: #0A7A6C; }
+  .wa-btn svg{ width: 19px; height: 19px; fill: currentColor; flex-shrink: 0; }
+  .wa-btn[hidden]{ display: none; } /* inline-flex ganaría al atributo hidden */
 
   footer{
     text-align:center;
@@ -382,9 +456,12 @@
   <div class="blob blob1"></div>
   <div class="blob blob2"></div>
 
+  <img class="site-logo" src="logo-bienestar.png" width="640" height="325"
+    alt="Bienestar Institucional — Corporación Universitaria Empresarial Alexander von Humboldt">
+
   <header>
     <div class="eyebrow">Kit de Bienestar</div>
-    <h1>Estrategias para regular <em>el miedo</em> ante lo vivido</h1>
+    <h1>Estrategias para <em>la autorregulación</em> ante el terremoto vivido</h1>
     <p class="lede">Vamos a recorrerlas juntos, una a la vez. Elige las que más te ayuden — al final tendrás tu propio kit para llevarte.</p>
   </header>
 
@@ -410,6 +487,12 @@
   <footer>
     Puedes volver a esta página cuando lo necesites. Guardarla en tu pantalla de inicio la deja a un toque de distancia.<br>
     Si el miedo persiste con fuerza o te cuesta funcionar en tu día a día, buscar apoyo profesional también es parte del cuidado.
+    <div>
+      <a class="wa-btn" id="wa-btn" hidden target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        Escríbenos por WhatsApp
+      </a>
+    </div>
   </footer>
 </div>
 
@@ -499,13 +582,111 @@ const countLabel = document.getElementById('count-label');
 const rootsFill = document.getElementById('roots-fill');
 const breatheLabel = document.getElementById('breathe-label');
 
+/* ---- Persistencia local ---- */
+const STORAGE_KEY = 'kit-bienestar-v1';
+
+// Safari en modo privado y los bloqueos de cookies lanzan al tocar localStorage.
+const store = (() => {
+  try{
+    const s = window.localStorage;
+    s.setItem('__kit_probe__', '1');
+    s.removeItem('__kit_probe__');
+    return s;
+  }catch(e){
+    return null;
+  }
+})();
+
+// Guardamos solo los ids: los textos siguen viviendo en DATA.
+function saveState(){
+  if(!store) return;
+  try{
+    store.setItem(STORAGE_KEY, JSON.stringify({
+      v: 1,
+      ids: kit.map(k => k.id),
+      step: currentStep,
+      maxStep: maxStep
+    }));
+  }catch(e){
+    console.warn('No se pudo guardar el kit', e);
+  }
+}
+
+function itemFromId(id){
+  const [ci, ii] = String(id).split('-').map(Number);
+  const cat = DATA[ci];
+  const item = cat && cat.items[ii];
+  if(!item) return null;
+  return {id, cat: cat.cat, t: item.t, d: item.d, accent: cat.accent};
+}
+
+function loadState(){
+  if(!store) return;
+  let saved = null;
+  try{
+    saved = JSON.parse(store.getItem(STORAGE_KEY) || 'null');
+  }catch(e){
+    saved = null; // json corrupto: empezamos limpio
+  }
+  if(!saved || saved.v !== 1) return;
+
+  const seen = new Set();
+  (Array.isArray(saved.ids) ? saved.ids : []).forEach(id => {
+    if(seen.has(id)) return;
+    const entry = itemFromId(id); // descarta ids de contenido que ya no existe
+    if(entry){ seen.add(id); kit.push(entry); }
+  });
+
+  const savedMax = Number.isInteger(saved.maxStep) ? saved.maxStep : 0;
+  maxStep = Math.min(Math.max(0, savedMax), KIT_STEP);
+  const savedStep = Number.isInteger(saved.step) ? saved.step : 0;
+  currentStep = Math.min(Math.max(0, savedStep), maxStep);
+}
+
+function clearState(){
+  kit.length = 0;
+  currentStep = 0;
+  maxStep = 0;
+  updateGround();   // ojo: esto vuelve a escribir el estado vacío…
+  if(store){
+    try{ store.removeItem(STORAGE_KEY); }catch(e){ /* nada que hacer */ }
+  }                 // …por eso borramos la clave al final
+  renderStepper();
+  renderStage();
+}
+
+/* ---- Contacto por WhatsApp ---- */
+const WHATSAPP = {
+  number: '573176780455',  // solo dígitos, con indicativo del país
+  message: 'Hola, escribo desde el Kit de Bienestar y necesito apoyo.'
+};
+
+(function setupWhatsApp(){
+  const btn = document.getElementById('wa-btn');
+  if(!btn) return;
+  const digits = String(WHATSAPP.number).replace(/\D/g, '');
+  if(!digits) return; // sin número configurado no mostramos el botón
+  btn.href = `https://wa.me/${digits}?text=${encodeURIComponent(WHATSAPP.message)}`;
+  btn.hidden = false;
+})();
+
+// Todo lo que entra en una plantilla HTML pasa por aquí.
+function esc(s){
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderStepper(){
   const dots = DATA.map((c, i) => {
     const visited = i <= maxStep;
     const current = i === currentStep;
     return `<div class="dot ${visited?'visited':''} ${current?'current':''}"
-      style="--dot-bg:${c.bg}; --dot-accent:${c.accent};"
-      data-step="${i}" title="${c.cat}">${c.icon}</div>`;
+      style="--dot-bg:${esc(c.bg)}; --dot-accent:${esc(c.accent)};"
+      data-step="${i}" title="${esc(c.cat)}">${esc(c.icon)}</div>`;
   }).join('');
   const kitVisited = KIT_STEP <= maxStep;
   const kitCurrent = currentStep === KIT_STEP;
@@ -519,9 +700,12 @@ function goToStep(idx){
   if(idx > maxStep + 1) return;
   currentStep = idx;
   maxStep = Math.max(maxStep, idx);
+  saveState();
   renderStage();
   renderStepper();
-  window.scrollTo({top: stepperEl.offsetTop - 20, behavior:'smooth'});
+  // offsetTop es relativo a .wrap (position:relative), no al documento.
+  const top = stepperEl.getBoundingClientRect().top + window.scrollY - 20;
+  window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
 }
 
 stepperEl.addEventListener('click', (e) => {
@@ -537,20 +721,20 @@ function buildCategoryStageHTML(ci){
     const already = kit.find(k => k.id === id);
     return `
       <div class="card ${already?'added':''}" id="card-${id}">
-        <h3>${item.t}</h3>
-        <p>${item.d}</p>
-        <button data-id="${id}" data-cat="${cat.cat}" data-t="${item.t}" data-accent="${cat.accent}">
+        <h3>${esc(item.t)}</h3>
+        <p>${esc(item.d)}</p>
+        <button data-id="${id}">
           ${already ? '✓ En mi kit' : '+ Agregar a mi kit'}
         </button>
       </div>`;
   }).join('');
 
   return `
-    <div style="--cat-bg:${cat.bg}; --cat-accent:${cat.accent}; --cat-ink:${cat.ink};">
+    <div style="--cat-bg:${esc(cat.bg)}; --cat-accent:${esc(cat.accent)}; --cat-ink:${esc(cat.ink)};">
       <div class="category-head">
-        <span class="icon">${cat.icon}</span>
-        <h2>${cat.cat}</h2>
-        <span class="sub">${cat.sub}</span>
+        <span class="icon">${esc(cat.icon)}</span>
+        <h2>${esc(cat.cat)}</h2>
+        <span class="sub">${esc(cat.sub)}</span>
       </div>
       <div class="cards">${cardsHTML}</div>
       <div class="stage-nav">
@@ -565,7 +749,7 @@ function buildCategoryStageHTML(ci){
 function buildKitStageHTML(){
   const emptyHTML = `<div id="kit-empty">Aún no elegiste herramientas — vuelve atrás y elige las que más te ayuden.</div>`;
   const listHTML = kit.length ? `<div id="kit-list">${kit.map(k => `
-      <div class="kit-item" style="--kit-accent:${k.accent}"><b>${k.t}</b><span class="kit-cat">${k.cat}</span><p>${k.d}</p></div>
+      <div class="kit-item" style="--kit-accent:${esc(k.accent)}"><b>${esc(k.t)}</b><span class="kit-cat">${esc(k.cat)}</span><p>${esc(k.d)}</p></div>
     `).join('')}</div>` : '';
 
   return `
@@ -577,20 +761,25 @@ function buildKitStageHTML(){
     </div>
     <div class="actions">
       <button id="download-btn" ${kit.length===0?'disabled':''}>Guardar mi kit en el celular</button>
-      <span class="howto">Se descarga como imagen — queda lista en tu galería.</span>
+      <span class="howto">Se guarda como imagen — queda lista en tu galería.</span>
     </div>
+    ${store ? `<p class="kit-saved">Tu kit queda guardado en este dispositivo — puedes cerrar la página y volver.${kit.length ? ` <button type="button" class="linklike" id="reset-btn">Empezar de nuevo</button>` : ''}</p>` : ''}
     <div class="stage-nav">
       <button class="nav-btn nav-prev show" id="prev-btn">← Anterior</button>
     </div>`;
 }
 
+// Debe coincidir con la transición de .stage en el CSS (0.35s).
+const STAGE_FADE_MS = 350;
+
 function renderStage(){
+  clearSaveNotice();
   stageEl.classList.remove('visible');
   setTimeout(() => {
     stageEl.innerHTML = currentStep === KIT_STEP ? buildKitStageHTML() : buildCategoryStageHTML(currentStep);
     attachStageEvents();
     stageEl.classList.add('visible');
-  }, 220);
+  }, STAGE_FADE_MS);
 }
 
 function attachStageEvents(){
@@ -612,9 +801,9 @@ function attachStageEvents(){
         card.classList.remove('added');
         btn.textContent = '+ Agregar a mi kit';
       } else {
-        const [ci, ii] = id.split('-').map(Number);
-        const item = DATA[ci].items[ii];
-        kit.push({id, cat: btn.dataset.cat, t: btn.dataset.t, d: item.d, accent: btn.dataset.accent});
+        const entry = itemFromId(id); // los textos salen de DATA, no del DOM
+        if(!entry) return;
+        kit.push(entry);
         card.classList.add('added');
         btn.textContent = '✓ En mi kit';
       }
@@ -624,37 +813,167 @@ function attachStageEvents(){
 
   const downloadBtn = document.getElementById('download-btn');
   if(downloadBtn){
-    downloadBtn.addEventListener('click', () => {
-      const el = document.getElementById('kit-capture');
-      downloadBtn.textContent = 'Generando imagen...';
-      html2canvas(el, {backgroundColor: '#FFFFFF', scale: 2}).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'mi-kit-de-bienestar.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        downloadBtn.textContent = 'Guardar mi kit en el celular';
-      });
+    downloadBtn.addEventListener('click', () => saveKitImage(downloadBtn));
+  }
+
+  // Confirmación en dos toques: borrar el kit no se deshace.
+  const resetBtn = document.getElementById('reset-btn');
+  if(resetBtn){
+    let armed = false;
+    resetBtn.addEventListener('click', () => {
+      if(!armed){
+        armed = true;
+        resetBtn.textContent = '¿Seguro? Toca otra vez';
+        setTimeout(() => {
+          if(armed && document.body.contains(resetBtn)){
+            armed = false;
+            resetBtn.textContent = 'Empezar de nuevo';
+          }
+        }, 4000);
+        return;
+      }
+      clearState();
     });
   }
+}
+
+const SAVE_LABEL = 'Guardar mi kit en el celular';
+const FILE_NAME = 'mi-kit-de-bienestar.png';
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+// iOS Safari caps canvas area; lower the scale before html2canvas returns a blank bitmap.
+function safeScale(el){
+  const MAX_AREA = 16777216;
+  const w = el.offsetWidth, h = el.offsetHeight;
+  if(!w || !h) return 2;
+  return Math.max(1, Math.min(2, Math.sqrt(MAX_AREA / (w * h))));
+}
+
+function canvasToBlob(canvas){
+  return new Promise((resolve, reject) => {
+    if(!canvas.toBlob) return reject(new Error('toBlob no soportado'));
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob devolvió null')), 'image/png');
+  });
+}
+
+async function saveKitImage(btn){
+  const el = document.getElementById('kit-capture');
+  clearSaveNotice();
+  btn.disabled = true;
+  btn.textContent = 'Generando imagen...';
+  try{
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#FFFFFF',
+      scale: safeScale(el),
+      useCORS: true,
+      onclone: (doc) => {
+        const clone = doc.getElementById('kit-capture');
+        if(clone) clone.classList.add('capturing');
+      }
+    });
+    const blob = await canvasToBlob(canvas);
+
+    let file = null;
+    try{ file = new File([blob], FILE_NAME, {type:'image/png'}); }catch(e){ /* sin constructor File */ }
+
+    // 1. Hoja de compartir: la única vía que llega a Fotos en iOS.
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({files:[file], title:'Mi Kit de Bienestar'});
+        return;
+      }catch(err){
+        if(err && err.name === 'AbortError') return; // el usuario cerró la hoja
+        // cualquier otro error: seguimos a la siguiente vía
+      }
+    }
+
+    // 2. Descarga real: escritorio y Android.
+    if(!isIOS){
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = FILE_NAME;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      return;
+    }
+
+    // 3. iOS sin compartir: mantener presionada la imagen para guardarla.
+    showSaveNotice('Mantén presionada la imagen y elige <b>“Guardar en Fotos”</b>.', URL.createObjectURL(blob));
+  }catch(err){
+    console.error(err);
+    showSaveNotice('No se pudo generar la imagen. Puedes tomar una captura de pantalla de tu kit — funciona igual de bien.');
+  }finally{
+    btn.disabled = kit.length === 0;
+    btn.textContent = SAVE_LABEL;
+  }
+}
+
+function clearSaveNotice(){
+  const old = stageEl.querySelector('.save-fallback');
+  if(old){
+    const img = old.querySelector('img');
+    if(img) URL.revokeObjectURL(img.src);
+    old.remove();
+  }
+}
+
+function showSaveNotice(message, imgUrl){
+  const actions = stageEl.querySelector('.actions');
+  if(!actions) return;
+  const box = document.createElement('div');
+  box.className = 'save-fallback';
+  const p = document.createElement('p');
+  p.innerHTML = message;
+  box.appendChild(p);
+  if(imgUrl){
+    const img = document.createElement('img');
+    img.alt = 'Mi Kit de Bienestar';
+    img.src = imgUrl;
+    box.appendChild(img);
+  }
+  actions.after(box);
 }
 
 function updateGround(){
   countLabel.textContent = `${kit.length} herramienta${kit.length===1?'':'s'}`;
   rootsFill.style.width = Math.min(100, (kit.length/totalItems)*100) + '%';
+  saveState();
 }
 
 // init
+loadState();
+updateGround();
 renderStepper();
 renderStage();
 stageEl.classList.add('visible');
 
-// Breathing guide label sync
+/* El texto se lee del reloj de la propia animación CSS: dos temporizadores
+   independientes se desfasan y el círculo terminaría diciendo "Exhala…"
+   mientras crece. Sin animación (reduced motion) usamos un reloj propio. */
 const phases = ["Inhala…", "Sostén…", "Exhala…"];
-let phaseIdx = 0;
-setInterval(() => {
-  phaseIdx = (phaseIdx + 1) % phases.length;
-  breatheLabel.textContent = phases[phaseIdx];
-}, 4000);
+const BREATHE_CYCLE = 12000; // igual que la duración de @keyframes breathe
+const breatheCircle = document.querySelector('.breathe-circle');
+const breatheStart = performance.now();
+
+function breatheClock(){
+  if(breatheCircle && breatheCircle.getAnimations){
+    const anim = breatheCircle.getAnimations().find(a => a.animationName === 'breathe');
+    if(anim && anim.currentTime != null) return Number(anim.currentTime);
+  }
+  return performance.now() - breatheStart;
+}
+
+function tickBreathe(){
+  const t = breatheClock();
+  const pos = ((t % BREATHE_CYCLE) + BREATHE_CYCLE) % BREATHE_CYCLE;
+  const label = phases[Math.min(Math.floor(pos / (BREATHE_CYCLE / phases.length)), phases.length - 1)];
+  if(breatheLabel.textContent !== label) breatheLabel.textContent = label;
+}
+
+tickBreathe();
+setInterval(tickBreathe, 250);
 </script>
 </body>
 </html>
